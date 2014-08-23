@@ -12,6 +12,7 @@ public class Train {
 	public int aRouteElement;
 	public int location, nextLocation;
 	public double progress;
+	public double pause;
 
 	public Train() {
 		goods = new double[Consts.goodsCount];

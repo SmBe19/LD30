@@ -16,7 +16,7 @@ public class Consts {
 	public static double cursorCorrectionY = 1;
 
 	public static double fieldSize;
-	public static double fieldsPerWidth = 20;
+	public static double fieldsPerWidth = 8;
 
 	public static void calcScale() {
 		screenScale = (double) Gdx.graphics.getHeight() / devHeight;
