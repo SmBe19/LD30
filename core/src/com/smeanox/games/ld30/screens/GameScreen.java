@@ -216,13 +216,14 @@ public class GameScreen implements Screen {
 
 		if (Gdx.input.getX() < Consts.scrollMargin) {
 			Consts.aOffsetX += Consts.scrollVelo * delta;
-			Consts.aOffsetX = Math.min(Consts.aOffsetX, Consts.boardWidth
-					* Consts.fieldSize - Consts.screenWidth
-					+ Consts.boardMargin);
+			Consts.aOffsetX = Math.min(Consts.aOffsetX, Consts.boardMargin);
 		}
 		if (Gdx.input.getX() > Gdx.graphics.getWidth() - Consts.scrollMargin) {
 			Consts.aOffsetX -= Consts.scrollVelo * delta;
-			Consts.aOffsetX = Math.max(Consts.aOffsetX, -Consts.boardMargin);
+			Consts.aOffsetX = Math
+					.max(Consts.aOffsetX,
+							-(Consts.boardWidth * Consts.fieldSize
+									- Consts.screenWidth + Consts.boardMargin));
 		}
 		if (Gdx.input.getY() < Consts.scrollMargin) {
 			Consts.aOffsetY -= Consts.scrollVelo * delta;

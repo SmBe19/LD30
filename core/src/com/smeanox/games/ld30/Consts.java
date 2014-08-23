@@ -16,14 +16,14 @@ public class Consts {
 	public static double cursorCorrectionY = 1;
 
 	public static double fieldSize;
-	public static double fieldsPerWidht = 8;
+	public static double fieldsPerWidth = 20;
 
 	public static void calcScale() {
 		screenScale = (double) Gdx.graphics.getHeight() / devHeight;
 		screenWidth = Gdx.graphics.getWidth();
 		screenHeight = Gdx.graphics.getHeight();
 
-		fieldSize = screenScale * devWidth / fieldsPerWidht;
+		fieldSize = screenScale * devWidth / fieldsPerWidth;
 
 		menuItemWidth *= screenScale;
 		menuItemHeight *= screenScale;
