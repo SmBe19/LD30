@@ -1,4 +1,3 @@
-
 package com.smeanox.games.ld30;
 
 import com.badlogic.gdx.Gdx;
