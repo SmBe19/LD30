@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.MathUtils;
 import com.smeanox.games.ld30.Assets;
 import com.smeanox.games.ld30.Consts;
 import com.smeanox.games.ld30.game.G;
@@ -156,7 +157,7 @@ public class GameScreen implements Screen {
 
 		spriteBatch.end();
 
-		updateInput();
+		updateInput(delta);
 	}
 
 	private void renderRails(int rails, int x, int y) {
@@ -195,19 +196,43 @@ public class GameScreen implements Screen {
 
 	int railBuildStart;
 
-	private void updateInput() {
+	private void updateInput(float delta) {
 		int cx, cy;
-		cx = (int) (Gdx.input.getX() * Consts.cursorCorrectionX + Consts.aOffsetX);
+		cx = (int) (Gdx.input.getX() * Consts.cursorCorrectionX - Consts.aOffsetX);
 		cy = (int) (Consts.screenHeight - Gdx.input.getY()
-				* Consts.cursorCorrectionY + Consts.aOffsetY);
+				* Consts.cursorCorrectionY - Consts.aOffsetY);
 
-		if (cx > 0 && cx < Consts.menuItemWidth * Consts.menuText.length
-				&& cy > Consts.screenHeight - Consts.menuItemHeight
-				&& cy < Consts.screenHeight) {
+		if (cx + Consts.aOffsetX > 0
+				&& cx + Consts.aOffsetX < Consts.menuItemWidth
+						* Consts.menuText.length
+				&& cy + Consts.aOffsetY > Consts.screenHeight
+						- Consts.menuItemHeight
+				&& cy + Consts.aOffsetY < Consts.screenHeight) {
 			if (Gdx.input.justTouched()) {
-				aMode = (int) (cx / Consts.menuItemWidth);
+				aMode = (int) ((cx + Consts.aOffsetX) / Consts.menuItemWidth);
 			}
 			return;
+		}
+
+		if (Gdx.input.getX() < Consts.scrollMargin) {
+			Consts.aOffsetX += Consts.scrollVelo * delta;
+			Consts.aOffsetX = Math.min(Consts.aOffsetX, Consts.boardWidth
+					* Consts.fieldSize - Consts.screenWidth
+					+ Consts.boardMargin);
+		}
+		if (Gdx.input.getX() > Gdx.graphics.getWidth() - Consts.scrollMargin) {
+			Consts.aOffsetX -= Consts.scrollVelo * delta;
+			Consts.aOffsetX = Math.max(Consts.aOffsetX, -Consts.boardMargin);
+		}
+		if (Gdx.input.getY() < Consts.scrollMargin) {
+			Consts.aOffsetY -= Consts.scrollVelo * delta;
+			Consts.aOffsetY = Math.max(Consts.aOffsetY,
+					-(Consts.boardHeight * Consts.fieldSize
+							- Consts.screenHeight + Consts.boardMargin));
+		}
+		if (Gdx.input.getY() > Gdx.graphics.getHeight() - Consts.scrollMargin) {
+			Consts.aOffsetY += Consts.scrollVelo * delta;
+			Consts.aOffsetY = Math.min(Consts.aOffsetY, Consts.boardMargin);
 		}
 
 		switch (aMode) {
@@ -216,9 +241,9 @@ public class GameScreen implements Screen {
 		case 1:
 			if (Gdx.input.justTouched()) {
 				if (railBuildStart == -1) {
-					railBuildStart = getActiveCursorField();
+					railBuildStart = getActiveCursorField(cx, cy);
 				} else {
-					G.addRail(railBuildStart, getActiveCursorField());
+					G.addRail(railBuildStart, getActiveCursorField(cx, cy));
 					railBuildStart = -1;
 				}
 			}
@@ -230,13 +255,10 @@ public class GameScreen implements Screen {
 		}
 	}
 
-	private int getActiveCursorField() {
+	private int getActiveCursorField(int cx, int cy) {
 		int x, y;
-		x = (int) (Gdx.input.getX() * Consts.cursorCorrectionX + Consts.aOffsetX);
-		y = (int) (Consts.screenHeight - Gdx.input.getY()
-				* Consts.cursorCorrectionY + Consts.aOffsetY);
-		x /= Consts.fieldSize;
-		y /= Consts.fieldSize;
+		x = (int) (cx / Consts.fieldSize);
+		y = (int) (cy / Consts.fieldSize);
 		return y * Consts.boardWidth + x;
 	}
 

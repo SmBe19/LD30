@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 
 public class Consts {
 	public static String GameName = "TrainSim";
-	
+
 	public static int devWidth = 960;
 	public static int devHeight = 540;
 	public static int screenWidth, screenHeight;
@@ -24,10 +24,10 @@ public class Consts {
 		screenHeight = Gdx.graphics.getHeight();
 
 		fieldSize = screenScale * devWidth / fieldsPerWidht;
-		
+
 		menuItemWidth *= screenScale;
 		menuItemHeight *= screenScale;
-		
+
 		menuFontSize *= screenScale;
 	}
 
@@ -41,6 +41,10 @@ public class Consts {
 	public static int startMoney = 1000;
 	public static int startCityCount = 4;
 	public static double trainVelo = 1;
+
+	public static double scrollMargin = 100;
+	public static double scrollVelo = 250;
+	public static double boardMargin = 100;
 
 	// Appearance
 	public static Color backgroundColor = Color.OLIVE;
@@ -61,9 +65,9 @@ public class Consts {
 	public static double cursorSize = 10;
 	public static double menuItemWidth = 170;
 	public static double menuItemHeight = 50;
-	
+
 	public static double menuFontSize = 0.5;
-	
+
 	public static String menuText[] = new String[] { "Sim", "Build", "Manage" };
 
 	public static double aOffsetX = 0, aOffsetY = 0;
