@@ -3,6 +3,7 @@ package com.smeanox.games.ld30.game;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import com.smeanox.games.ld30.Assets;
 import com.smeanox.games.ld30.Consts;
 
 public class G {
@@ -390,12 +391,18 @@ public class G {
 
 		if (Consts.rnd.nextDouble() < Consts.addCityRate) {
 			addCity();
+			if (!Assets.mute) {
+				Assets.newCitySound.play();
+			}
 		}
 		if (Consts.rnd.nextDouble() < Consts.addTrainRate) {
 			addTrain();
 		}
 		if (Consts.rnd.nextDouble() < Consts.destructionRate) {
 			destruction();
+			if (!Assets.mute) {
+				Assets.destructionSound.play();
+			}
 		}
 
 		if (money > Consts.moneyNextLevel) {

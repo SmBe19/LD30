@@ -6,7 +6,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
 public class Consts {
-	public static String GameName = "ISP Simulator 3000";
+	public static String GameName = "TrainSim 4000";
 
 	public static int devWidth = 960;
 	public static int devHeight = 540;
@@ -16,7 +16,7 @@ public class Consts {
 	public static double cursorCorrectionY = 1;
 
 	public static double fieldSize;
-	public static double fieldsPerWidth = 8;
+	public static double fieldsPerWidth = 9;
 	public static double zoomVelo = 1;
 
 	public static void calcScale() {
@@ -26,6 +26,7 @@ public class Consts {
 
 		menuItemWidth *= screenScale;
 		menuItemHeight *= screenScale;
+		upgradeItemWidth *= screenScale;
 
 		menuFontSize *= screenScale;
 	}
@@ -89,9 +90,9 @@ public class Consts {
 	public static double moneyMoreCapacity;
 	public static double moneyNextLevel = 4000;
 
-	public static double scrollMargin = 50;
+	public static double scrollMargin = 100;
 	public static double scrollVelo = 250;
-	public static double boardMargin = 25;
+	public static double boardMargin = 50;
 
 	// Appearance
 	public static Color backgroundColor = Color.OLIVE;

@@ -14,6 +14,8 @@ public class LD30 extends Game {
 		
 		Assets.load();
 		
+		Assets.backgroundMusic.play();
+		
 		setScreen(new GameScreen());
 	}
 }

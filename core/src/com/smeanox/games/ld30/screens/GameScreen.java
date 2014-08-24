@@ -96,10 +96,13 @@ public class GameScreen implements Screen {
 	public void render(float delta) {
 		G.update(delta);
 		if (G.won) {
+			if (!Assets.mute) {
+				Assets.nextLevelSound.play();
+			}
 			Consts.boardWidth *= 2;
 			Consts.boardHeight *= 2;
 			Consts.moneyNextLevel *= 4;
-			Consts.fieldsPerWidth = Consts.boardWidth;
+			Consts.fieldsPerWidth = Consts.boardWidth + 1;
 			init();
 			return;
 		}
@@ -299,6 +302,8 @@ public class GameScreen implements Screen {
 		}
 	}
 
+	private boolean mutePressed;
+
 	private void updateInput(float delta) {
 		int cx, cy;
 		cx = (int) (Gdx.input.getX() * Consts.cursorCorrectionX - Consts.aOffsetX);
@@ -308,6 +313,11 @@ public class GameScreen implements Screen {
 		if (Gdx.input.isKeyPressed(Keys.F5)) {
 			init();
 		}
+
+		if (!mutePressed && Gdx.input.isKeyPressed(Keys.F8)) {
+			Assets.setMute(!Assets.mute);
+		}
+		mutePressed = Gdx.input.isKeyPressed(Keys.F8);
 
 		if (Gdx.input.isKeyPressed(Keys.F9)
 				&& Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
@@ -374,6 +384,10 @@ public class GameScreen implements Screen {
 					G.editRail(railBuildStart, getActiveCursorField(cx, cy),
 							Gdx.input.isButtonPressed(Buttons.RIGHT));
 					railBuildStart = -1;
+
+					if (!Assets.mute) {
+						Assets.deliverySound.play(0.5f);
+					}
 				}
 			}
 			if (railBuildStart != -1) {
