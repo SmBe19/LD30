@@ -382,7 +382,8 @@ public class GameScreen implements Screen {
 					railBuildStart = getActiveCursorField(cx, cy);
 				} else {
 					G.editRail(railBuildStart, getActiveCursorField(cx, cy),
-							Gdx.input.isButtonPressed(Buttons.RIGHT));
+							Gdx.input.isButtonPressed(Buttons.RIGHT)
+									|| Gdx.input.isKeyPressed(Keys.SPACE));
 					railBuildStart = -1;
 
 					if (!Assets.mute) {

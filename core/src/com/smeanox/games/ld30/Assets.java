@@ -24,7 +24,7 @@ public class Assets {
 				.newSound(Gdx.files.internal("nextLevel.wav"));
 
 		backgroundMusic = Gdx.audio.newMusic(Gdx.files
-				.internal("backgroundMusic.wav"));
+				.internal("backgroundMusic.mp3"));
 		backgroundMusic.setLooping(true);
 		backgroundMusic.setVolume(0.5f);
 
