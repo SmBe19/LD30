@@ -10,6 +10,7 @@ public class Train {
 
 	public ArrayList<Integer> route;
 	public int aRouteElement;
+	public int distToDest;
 	public int location, nextLocation;
 	public double progress;
 	public double pause;
@@ -18,6 +19,8 @@ public class Train {
 		goods = new double[Consts.goodsCount];
 
 		route = new ArrayList<Integer>();
+
+		distToDest = 0;
 	}
 
 }

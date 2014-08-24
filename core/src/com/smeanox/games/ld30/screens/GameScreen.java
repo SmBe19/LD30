@@ -1,12 +1,14 @@
 package com.smeanox.games.ld30.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.MathUtils;
 import com.smeanox.games.ld30.Assets;
 import com.smeanox.games.ld30.Consts;
 import com.smeanox.games.ld30.game.G;
@@ -17,46 +19,94 @@ public class GameScreen implements Screen {
 	ShapeRenderer shapeRenderer;
 	SpriteBatch spriteBatch;
 
+	int railBuildStart, aRailBuild;
+
 	int aMode; // 0 = Watch, 1 = Build Rails, 2 = Configure Trains, 3 =
 				// Configure Train
 
 	public GameScreen() {
-		G.init();
-
-		// DEB
-
-		Train tmpTrain;
-		tmpTrain = new Train();
-		tmpTrain.location = 16;
-		tmpTrain.nextLocation = 16;
-		tmpTrain.route.add(16);
-		tmpTrain.route.add(4);
-		G.trains.add(tmpTrain);
-		tmpTrain = new Train();
-		tmpTrain.location = 16;
-		tmpTrain.nextLocation = 16;
-		tmpTrain.route.add(24);
-		tmpTrain.route.add(22);
-		tmpTrain.route.add(4);
-		tmpTrain.route.add(18);
-		G.trains.add(tmpTrain);
 
 		shapeRenderer = new ShapeRenderer();
 
 		spriteBatch = new SpriteBatch();
 
-		aMode = 0;
+		Gdx.input.setInputProcessor(new InputProcessor() {
+
+			@Override
+			public boolean touchUp(int screenX, int screenY, int pointer,
+					int button) {
+				return false;
+			}
+
+			@Override
+			public boolean touchDragged(int screenX, int screenY, int pointer) {
+				return false;
+			}
+
+			@Override
+			public boolean touchDown(int screenX, int screenY, int pointer,
+					int button) {
+				return false;
+			}
+
+			@Override
+			public boolean scrolled(int amount) {
+				Consts.fieldSize -= amount * Consts.zoomVelo;
+				Consts.fieldSize = Math.max(Consts.fieldSize, 1);
+				return true;
+			}
+
+			@Override
+			public boolean mouseMoved(int screenX, int screenY) {
+				return false;
+			}
+
+			@Override
+			public boolean keyUp(int keycode) {
+				return false;
+			}
+
+			@Override
+			public boolean keyTyped(char character) {
+				return false;
+			}
+
+			@Override
+			public boolean keyDown(int keycode) {
+				return false;
+			}
+		});
+
+		init();
+	}
+
+	public void init() {
+		Consts.resetValues();
+
+		G.init();
+
+		aMode = 1;
 
 		railBuildStart = -1;
+
+		Consts.fieldSize = Consts.screenWidth / Consts.fieldsPerWidth;
 	}
 
 	@Override
 	public void render(float delta) {
+		G.update(delta);
+		if (G.won) {
+			Consts.boardWidth *= 2;
+			Consts.boardHeight *= 2;
+			Consts.moneyNextLevel *= 4;
+			Consts.fieldsPerWidth = Consts.boardWidth;
+			init();
+			return;
+		}
+
 		Gdx.gl.glClearColor(Consts.backgroundColor.r, Consts.backgroundColor.g,
 				Consts.backgroundColor.b, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-		G.update(delta);
 
 		shapeRenderer.begin(ShapeType.Line);
 		shapeRenderer.setColor(Consts.gridColor);
@@ -77,7 +127,22 @@ public class GameScreen implements Screen {
 		// Rails & Cities
 		for (int y = 0; y < Consts.boardHeight; y++) {
 			for (int x = 0; x < Consts.boardWidth; x++) {
-				if (y * Consts.boardWidth + x == railBuildStart) {
+
+				// Building
+				if ((railBuildStart != -1 && aRailBuild != -1 && ((railBuildStart
+						/ Consts.boardWidth == aRailBuild / Consts.boardWidth
+						&& y == railBuildStart / Consts.boardWidth
+						&& x <= Math.max(railBuildStart % Consts.boardWidth,
+								aRailBuild % Consts.boardWidth) && x >= Math
+						.min(railBuildStart % Consts.boardWidth, aRailBuild
+								% Consts.boardWidth)) || (railBuildStart
+						% Consts.boardWidth == aRailBuild % Consts.boardWidth
+						&& x == railBuildStart % Consts.boardWidth
+						&& y <= Math.max(railBuildStart / Consts.boardWidth,
+								aRailBuild / Consts.boardWidth) && y >= Math
+						.min(railBuildStart / Consts.boardWidth, aRailBuild
+								/ Consts.boardWidth))))
+						|| (y * Consts.boardWidth + x == railBuildStart)) {
 					shapeRenderer.setColor(Consts.activeBackgroundColor);
 					shapeRenderer.rect((float) (Consts.aOffsetX + x
 							* Consts.fieldSize), (float) (Consts.aOffsetY + y
@@ -85,12 +150,24 @@ public class GameScreen implements Screen {
 							(float) (Consts.fieldSize));
 				}
 
-				shapeRenderer.setColor(Consts.railColor);
+				shapeRenderer
+						.setColor(G.board[y][x].capacity > Consts.capacityReloadVelo ? Consts.railColor
+								: Consts.railFullColor);
 
 				renderRails(G.board[y][x].rails, x, y);
 
+				if (G.board[y][x].obstacle) {
+					shapeRenderer.setColor(Consts.blockedBackgroundColor);
+					shapeRenderer.rect((float) (Consts.aOffsetX + x
+							* Consts.fieldSize), (float) (Consts.aOffsetY + y
+							* Consts.fieldSize), (float) (Consts.fieldSize),
+							(float) (Consts.fieldSize));
+				}
+
 				if (G.board[y][x].city != null) {
-					shapeRenderer.setColor(Consts.cityColor);
+					shapeRenderer
+							.setColor(G.board[y][x].rails == 0 ? Consts.cityLonelyColor
+									: Consts.cityColor);
 					shapeRenderer
 							.rect((float) (Consts.aOffsetX + (x + 0.5 - Consts.citySize / 2)
 									* Consts.fieldSize),
@@ -103,13 +180,16 @@ public class GameScreen implements Screen {
 		}
 
 		// Trains
-		shapeRenderer.setColor(Consts.trainColor);
 		for (Train train : G.trains) {
 			int aX, nX, aY, nY;
 			aX = train.location % Consts.boardWidth;
 			aY = train.location / Consts.boardWidth;
 			nX = train.nextLocation % Consts.boardWidth;
 			nY = train.nextLocation / Consts.boardWidth;
+
+			shapeRenderer
+					.setColor(train.nextLocation == train.location ? Consts.trainStuckColor
+							: Consts.trainColor);
 
 			shapeRenderer.rect((float) (Consts.aOffsetX + (aX + train.progress
 					* (nX - aX) - Consts.trainSize / 2 + 0.5)
@@ -121,27 +201,40 @@ public class GameScreen implements Screen {
 		}
 
 		// Cursor
-		shapeRenderer.setColor(Consts.cursorColor);
+		if (Consts.cursorActive) {
+			shapeRenderer.setColor(Consts.cursorColor);
 
-		shapeRenderer.circle(
-				(float) (Gdx.input.getX() * Consts.cursorCorrectionX),
-				(float) (Consts.screenHeight - Gdx.input.getY()
-						* Consts.cursorCorrectionY),
-				(float) (Consts.cursorSize));
+			shapeRenderer.circle(
+					(float) (Gdx.input.getX() * Consts.cursorCorrectionX),
+					(float) (Consts.screenHeight - Gdx.input.getY()
+							* Consts.cursorCorrectionY),
+					(float) (Consts.cursorSize));
+		}
 
 		// Menu
-		shapeRenderer.setColor(Consts.menuBackgroundColor);
-		shapeRenderer.rect(0,
-				(float) (Consts.screenHeight - Consts.menuItemHeight),
-				(float) (Consts.menuItemWidth * Consts.menuText.length),
-				(float) (Consts.menuItemHeight));
-		shapeRenderer.setColor(Consts.menuActiveBackgroundColor);
-		shapeRenderer
-				.rect((float) (Consts.menuItemWidth * aMode),
-						(float) (Consts.screenHeight - Consts.menuItemHeight),
-						(float) (Consts.menuItemWidth),
-						(float) (Consts.menuItemHeight));
+		if (Consts.menuActive) {
+			shapeRenderer.setColor(Consts.menuBackgroundColor);
+			shapeRenderer.rect(0,
+					(float) (Consts.screenHeight - Consts.menuItemHeight),
+					(float) (Consts.menuItemWidth * Consts.menuText.length),
+					(float) (Consts.menuItemHeight));
+			shapeRenderer.setColor(Consts.menuActiveBackgroundColor);
+			shapeRenderer.rect((float) (Consts.menuItemWidth * aMode),
+					(float) (Consts.screenHeight - Consts.menuItemHeight),
+					(float) (Consts.menuItemWidth),
+					(float) (Consts.menuItemHeight));
+		}
 
+		// Upgrade
+		shapeRenderer
+				.setColor(G.money + Consts.moneyMoreCapacity < 0 ? Consts.menuActiveBackgroundColor
+						: Consts.menuBackgroundColor);
+
+		shapeRenderer.rect(
+				(float) (Consts.screenWidth - Consts.upgradeItemWidth),
+				(float) (Consts.screenHeight - Consts.menuItemHeight),
+				(float) (Consts.upgradeItemWidth),
+				(float) (Consts.menuItemHeight));
 		shapeRenderer.end();
 
 		Assets.arial.setScale((float) (Consts.menuFontSize));
@@ -149,11 +242,23 @@ public class GameScreen implements Screen {
 
 		spriteBatch.begin();
 
-		for (int i = 0; i < Consts.menuText.length; i++) {
-			Assets.arial.draw(spriteBatch, Consts.menuText[i],
-					(float) (Consts.menuItemWidth * i + 10),
-					(float) (Consts.screenHeight - 10));
+		if (Consts.menuActive) {
+			for (int i = 0; i < Consts.menuText.length; i++) {
+				Assets.arial.draw(spriteBatch, Consts.menuText[i],
+						(float) (Consts.menuItemWidth * i + 10),
+						(float) (Consts.screenHeight - 10));
+			}
 		}
+
+		Assets.arial.draw(spriteBatch, "Upgrade ($ "
+				+ (-(int) Consts.moneyMoreCapacity) + ")",
+				(float) (Consts.screenWidth - Consts.upgradeItemWidth + 10),
+				(float) (Consts.screenHeight - 10));
+
+		Assets.arial.draw(spriteBatch, "$ " + Math.round(G.money)
+				+ " (Goal: $ " + Math.round(Consts.moneyNextLevel)
+				+ ") | Capacity: " + Math.round(Consts.capacityReloadVelo)
+				+ "/s", 10, (float) (Consts.menuFontSize * 75));
 
 		spriteBatch.end();
 
@@ -194,15 +299,24 @@ public class GameScreen implements Screen {
 		}
 	}
 
-	int railBuildStart;
-
 	private void updateInput(float delta) {
 		int cx, cy;
 		cx = (int) (Gdx.input.getX() * Consts.cursorCorrectionX - Consts.aOffsetX);
 		cy = (int) (Consts.screenHeight - Gdx.input.getY()
 				* Consts.cursorCorrectionY - Consts.aOffsetY);
 
-		if (cx + Consts.aOffsetX > 0
+		if (Gdx.input.isKeyPressed(Keys.F5)) {
+			init();
+		}
+
+		if (Gdx.input.isKeyPressed(Keys.F9)
+				&& Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
+			G.money += Math.abs(G.money / 10);
+		}
+
+		// Menu
+		if (Consts.menuActive
+				&& cx + Consts.aOffsetX > 0
 				&& cx + Consts.aOffsetX < Consts.menuItemWidth
 						* Consts.menuText.length
 				&& cy + Consts.aOffsetY > Consts.screenHeight
@@ -214,6 +328,17 @@ public class GameScreen implements Screen {
 			return;
 		}
 
+		if (cx + Consts.aOffsetX > Consts.screenWidth - Consts.upgradeItemWidth
+				&& cx + Consts.aOffsetX < Consts.screenWidth
+				&& cy + Consts.aOffsetY > Consts.screenHeight
+						- Consts.menuItemHeight
+				&& cy + Consts.aOffsetY < Consts.screenHeight) {
+			if (Gdx.input.justTouched()) {
+				G.upgradeCapacity();
+			}
+			return;
+		}
+
 		if (Gdx.input.getX() < Consts.scrollMargin) {
 			Consts.aOffsetX += Consts.scrollVelo * delta;
 			Consts.aOffsetX = Math.min(Consts.aOffsetX, Consts.boardMargin);
@@ -221,15 +346,17 @@ public class GameScreen implements Screen {
 		if (Gdx.input.getX() > Gdx.graphics.getWidth() - Consts.scrollMargin) {
 			Consts.aOffsetX -= Consts.scrollVelo * delta;
 			Consts.aOffsetX = Math
-					.max(Consts.aOffsetX,
+					.min(Math.max(Consts.aOffsetX,
 							-(Consts.boardWidth * Consts.fieldSize
-									- Consts.screenWidth + Consts.boardMargin));
+									- Consts.screenWidth + Consts.boardMargin)),
+							Consts.boardMargin);
 		}
 		if (Gdx.input.getY() < Consts.scrollMargin) {
 			Consts.aOffsetY -= Consts.scrollVelo * delta;
-			Consts.aOffsetY = Math.max(Consts.aOffsetY,
+			Consts.aOffsetY = Math.min(Math.max(Consts.aOffsetY,
 					-(Consts.boardHeight * Consts.fieldSize
-							- Consts.screenHeight + Consts.boardMargin));
+							- Consts.screenHeight + Consts.boardMargin)),
+					Consts.boardMargin);
 		}
 		if (Gdx.input.getY() > Gdx.graphics.getHeight() - Consts.scrollMargin) {
 			Consts.aOffsetY += Consts.scrollVelo * delta;
@@ -244,8 +371,18 @@ public class GameScreen implements Screen {
 				if (railBuildStart == -1) {
 					railBuildStart = getActiveCursorField(cx, cy);
 				} else {
-					G.addRail(railBuildStart, getActiveCursorField(cx, cy));
+					G.editRail(railBuildStart, getActiveCursorField(cx, cy),
+							Gdx.input.isButtonPressed(Buttons.RIGHT));
 					railBuildStart = -1;
+				}
+			}
+			if (railBuildStart != -1) {
+				aRailBuild = getActiveCursorField(cx, cy);
+				if (aRailBuild / Consts.boardWidth != railBuildStart
+						/ Consts.boardWidth
+						&& aRailBuild % Consts.boardWidth != railBuildStart
+								% Consts.boardWidth) {
+					aRailBuild = -1;
 				}
 			}
 			break;
@@ -260,6 +397,9 @@ public class GameScreen implements Screen {
 		int x, y;
 		x = (int) (cx / Consts.fieldSize);
 		y = (int) (cy / Consts.fieldSize);
+		if (x < 0 || x >= Consts.boardWidth || y < 0 || y >= Consts.boardHeight) {
+			return -1;
+		}
 		return y * Consts.boardWidth + x;
 	}
 
